@@ -28,12 +28,10 @@ export function useManifest() {
       })
 
       if (!response.ok) {
-        const errorBody = await response.json().catch(() => ({ detail: 'Unknown error' }))
+        const errorBody = await response.json().catch(() => ({ detail: `HTTP ${response.status}` }))
         const message = errorBody.detail ?? `HTTP ${response.status}`
         setUploadError(message)
-        toast.error(
-          `Couldn't parse that file. Make sure it's a dbt manifest.json from target/ — not a sources.yml or profiles.yml.`
-        )
+        toast.error(message, { duration: 6000 })
         return null
       }
 
@@ -44,7 +42,7 @@ export function useManifest() {
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Network error'
       setUploadError(message)
-      toast.error(`Can't reach the API. Is the backend running? Try docker-compose up.`)
+      toast.error(`Can't reach the API: ${message}`, { duration: 6000 })
       return null
     } finally {
       setUploading(false)
