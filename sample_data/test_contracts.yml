@@ -1,0 +1,58 @@
+version: 1
+model: orders
+description: "Final orders mart. One row per transaction."
+owner: analytics
+freshness:
+  warn_after_hours: 24
+  error_after_hours: 48
+row_count:
+  min: 10
+  warn_below: 100
+columns:
+  order_id:
+    not_null: true
+    unique: true
+    accepted_values: []
+    min: null
+    max: null
+    warn_if_null_rate_above: null
+  status:
+    not_null: false
+    unique: false
+    accepted_values: [pending, completed, failed, reversed]
+    min: null
+    max: null
+    warn_if_null_rate_above: 0.05
+  amount_usd:
+    not_null: false
+    unique: false
+    accepted_values: []
+    min: 0
+    max: null
+    warn_if_null_rate_above: 0.05
+---
+version: 1
+model: customers
+description: "360-degree customer mart."
+owner: analytics
+freshness:
+  warn_after_hours: 24
+  error_after_hours: 48
+row_count:
+  min: 10
+  warn_below: 100
+columns:
+  customer_id:
+    not_null: true
+    unique: true
+    accepted_values: []
+    min: null
+    max: null
+    warn_if_null_rate_above: null
+  kyc_status:
+    not_null: false
+    unique: false
+    accepted_values: [pending, approved, rejected, expired]
+    min: null
+    max: null
+    warn_if_null_rate_above: 0.1
