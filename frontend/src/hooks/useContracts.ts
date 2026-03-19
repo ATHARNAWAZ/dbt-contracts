@@ -69,17 +69,18 @@ export function useContracts() {
 
         for (const line of lines) {
           if (!line.startsWith('data: ')) continue
-          const data = line.slice(6)
+          const raw = line.slice(6)
 
-          if (data === '[DONE]') {
-            finishGenerating(model.name)
-            return
+          let parsed: { chunk: string; done: boolean; error?: string }
+          try {
+            parsed = JSON.parse(raw) as { chunk: string; done: boolean; error?: string }
+          } catch {
+            continue
           }
 
-          if (data.startsWith('[ERROR]')) {
-            const message = data.slice(7).trim()
-            setError(model.name, message)
-            const isRateLimit = /rate.?limit|429/i.test(message)
+          if (parsed.error) {
+            setError(model.name, parsed.error)
+            const isRateLimit = /rate.?limit|429/i.test(parsed.error)
             if (isRateLimit) {
               toast.error(
                 `You've hit the free tier limit (10 contracts/hour). Come back later, or the sample manifest resets.`
@@ -92,9 +93,14 @@ export function useContracts() {
             return
           }
 
-          // Regular chunk — append to the contract YAML
-          // SSE newlines were escaped to multiple data: lines, so we add \n back
-          appendYaml(model.name, data + '\n')
+          if (parsed.done) {
+            finishGenerating(model.name)
+            return
+          }
+
+          if (parsed.chunk) {
+            appendYaml(model.name, parsed.chunk)
+          }
         }
       }
 
