@@ -114,7 +114,7 @@ jobs:
       - name: Build
         run: npm run build
         env:
-          VITE_API_URL: https://dbt-contracts-api.railway.app
+          VITE_API_URL: https://dbt-contracts-production.up.railway.app
 
   # ---------------------------------------------------------------------------
   # GitHub Action: validate the action itself works
