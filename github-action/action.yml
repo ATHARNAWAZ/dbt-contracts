@@ -1,0 +1,65 @@
+name: 'dbt Contract Validator'
+description: 'Validate dbt model contracts against a manifest.json. Fails the build on violation.'
+author: 'dbt-contracts'
+
+branding:
+  icon: 'shield'
+  color: 'purple'
+
+inputs:
+  contracts-path:
+    description: 'Path to the contracts YAML file (e.g. contracts/contracts.yml)'
+    required: true
+    default: 'contracts/contracts.yml'
+
+  manifest-path:
+    description: 'Path to the dbt manifest.json (e.g. target/manifest.json)'
+    required: true
+    default: 'target/manifest.json'
+
+  fail-on-violation:
+    description: 'Fail the workflow if any contract is violated'
+    required: false
+    default: 'true'
+
+  models:
+    description: 'Comma-separated list of model names to validate. Validates all if empty.'
+    required: false
+    default: ''
+
+  severity:
+    description: 'Minimum violation severity that causes failure: error or warning'
+    required: false
+    default: 'error'
+
+outputs:
+  violations:
+    description: 'Number of contract violations found'
+
+  validated-models:
+    description: 'Number of models validated'
+
+  summary:
+    description: 'Human-readable validation summary'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+
+    - name: Install validation dependencies
+      shell: bash
+      run: pip install pyyaml==6.0.1
+
+    - name: Validate dbt contracts
+      shell: bash
+      run: |
+        python "${{ github.action_path }}/src/validate.py" \
+          --contracts "${{ inputs.contracts-path }}" \
+          --manifest "${{ inputs.manifest-path }}" \
+          --fail-on-violation "${{ inputs.fail-on-violation }}" \
+          --models "${{ inputs.models }}" \
+          --severity "${{ inputs.severity }}"

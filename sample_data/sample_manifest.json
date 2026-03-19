@@ -1,0 +1,927 @@
+{
+  "metadata": {
+    "dbt_schema_version": "https://schemas.getdbt.com/dbt/manifest/v11/manifest.json",
+    "dbt_version": "1.7.4",
+    "generated_at": "2025-03-01T14:23:11.847Z",
+    "invocation_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "env": {}
+  },
+  "nodes": {
+    "model.fintech_dbt.stg_transactions": {
+      "unique_id": "model.fintech_dbt.stg_transactions",
+      "fqn": ["fintech_dbt", "staging", "stg_transactions"],
+      "database": "analytics",
+      "schema": "staging",
+      "name": "stg_transactions",
+      "resource_type": "model",
+      "package_name": "fintech_dbt",
+      "path": "staging/stg_transactions.sql",
+      "original_file_path": "models/staging/stg_transactions.sql",
+      "description": "Cleaned and standardised transaction records from the payments source system. One row per transaction event.",
+      "config": {
+        "materialized": "view",
+        "tags": ["staging", "payments"]
+      },
+      "tags": ["staging", "payments"],
+      "columns": {
+        "transaction_id": {
+          "name": "transaction_id",
+          "description": "Surrogate key for the transaction, cast from the source integer ID.",
+          "data_type": "varchar",
+          "meta": { "pii": false }
+        },
+        "customer_id": {
+          "name": "customer_id",
+          "description": "Foreign key to stg_customers.",
+          "data_type": "varchar",
+          "meta": { "pii": false }
+        },
+        "amount_usd": {
+          "name": "amount_usd",
+          "description": "Transaction amount in USD, converted from source currency at day rate.",
+          "data_type": "numeric",
+          "meta": { "pii": false }
+        },
+        "currency_code": {
+          "name": "currency_code",
+          "description": "ISO 4217 3-letter currency code of the original transaction.",
+          "data_type": "varchar",
+          "meta": { "pii": false }
+        },
+        "transaction_type": {
+          "name": "transaction_type",
+          "description": "Type of transaction: purchase, refund, chargeback, or transfer.",
+          "data_type": "varchar",
+          "meta": { "pii": false }
+        },
+        "status": {
+          "name": "status",
+          "description": "Processing status: pending, completed, failed, reversed.",
+          "data_type": "varchar",
+          "meta": { "pii": false }
+        },
+        "merchant_id": {
+          "name": "merchant_id",
+          "description": "Identifier of the merchant receiving the payment.",
+          "data_type": "varchar",
+          "meta": { "pii": false }
+        },
+        "transaction_at": {
+          "name": "transaction_at",
+          "description": "UTC timestamp when the transaction was initiated.",
+          "data_type": "timestamp",
+          "meta": { "pii": false }
+        },
+        "settled_at": {
+          "name": "settled_at",
+          "description": "UTC timestamp when funds settled. Null if still pending.",
+          "data_type": "timestamp",
+          "meta": { "pii": false }
+        },
+        "is_international": {
+          "name": "is_international",
+          "description": "True if the merchant country differs from the card issuer country.",
+          "data_type": "boolean",
+          "meta": { "pii": false }
+        },
+        "loaded_at": {
+          "name": "loaded_at",
+          "description": "Timestamp this row was loaded into the warehouse.",
+          "data_type": "timestamp",
+          "meta": { "pii": false }
+        }
+      },
+      "depends_on": {
+        "nodes": ["source.fintech_dbt.raw.raw_transactions"]
+      },
+      "tests": ["not_null.transaction_id", "unique.transaction_id"]
+    },
+    "model.fintech_dbt.stg_customers": {
+      "unique_id": "model.fintech_dbt.stg_customers",
+      "fqn": ["fintech_dbt", "staging", "stg_customers"],
+      "database": "analytics",
+      "schema": "staging",
+      "name": "stg_customers",
+      "resource_type": "model",
+      "package_name": "fintech_dbt",
+      "path": "staging/stg_customers.sql",
+      "original_file_path": "models/staging/stg_customers.sql",
+      "description": "Standardised customer profiles. PII columns are masked in non-production environments via dbt-crypt.",
+      "config": {
+        "materialized": "view",
+        "tags": ["staging", "customers"]
+      },
+      "tags": ["staging", "customers"],
+      "columns": {
+        "customer_id": {
+          "name": "customer_id",
+          "description": "Surrogate key for the customer.",
+          "data_type": "varchar",
+          "meta": { "pii": false }
+        },
+        "email_hash": {
+          "name": "email_hash",
+          "description": "SHA-256 hash of the customer email address. Used for deduplication without storing PII.",
+          "data_type": "varchar",
+          "meta": { "pii": false }
+        },
+        "country_code": {
+          "name": "country_code",
+          "description": "ISO 3166-1 alpha-2 country code of the customer's registered address.",
+          "data_type": "varchar",
+          "meta": { "pii": false }
+        },
+        "kyc_status": {
+          "name": "kyc_status",
+          "description": "Know-Your-Customer verification status: pending, approved, rejected, expired.",
+          "data_type": "varchar",
+          "meta": { "pii": false }
+        },
+        "risk_tier": {
+          "name": "risk_tier",
+          "description": "Internal risk classification: low, medium, high. Assigned by the risk engine.",
+          "data_type": "varchar",
+          "meta": { "pii": false }
+        },
+        "segment": {
+          "name": "segment",
+          "description": "Marketing segment: retail, sme, enterprise.",
+          "data_type": "varchar",
+          "meta": { "pii": false }
+        },
+        "created_at": {
+          "name": "created_at",
+          "description": "UTC timestamp when the customer account was created.",
+          "data_type": "timestamp",
+          "meta": { "pii": false }
+        },
+        "is_active": {
+          "name": "is_active",
+          "description": "Whether the customer account is currently active.",
+          "data_type": "boolean",
+          "meta": { "pii": false }
+        }
+      },
+      "depends_on": {
+        "nodes": ["source.fintech_dbt.raw.raw_customers"]
+      },
+      "tests": ["not_null.customer_id", "unique.customer_id"]
+    },
+    "model.fintech_dbt.stg_products": {
+      "unique_id": "model.fintech_dbt.stg_products",
+      "fqn": ["fintech_dbt", "staging", "stg_products"],
+      "database": "analytics",
+      "schema": "staging",
+      "name": "stg_products",
+      "resource_type": "model",
+      "package_name": "fintech_dbt",
+      "path": "staging/stg_products.sql",
+      "original_file_path": "models/staging/stg_products.sql",
+      "description": "Financial product catalogue: cards, loans, savings accounts.",
+      "config": {
+        "materialized": "view",
+        "tags": ["staging", "products"]
+      },
+      "tags": ["staging", "products"],
+      "columns": {
+        "product_id": {
+          "name": "product_id",
+          "description": "Unique identifier for the product.",
+          "data_type": "varchar",
+          "meta": {}
+        },
+        "product_name": {
+          "name": "product_name",
+          "description": "Human-readable product name.",
+          "data_type": "varchar",
+          "meta": {}
+        },
+        "product_type": {
+          "name": "product_type",
+          "description": "Product category: card, loan, savings, investment.",
+          "data_type": "varchar",
+          "meta": {}
+        },
+        "is_active": {
+          "name": "is_active",
+          "description": "Whether the product is currently offered.",
+          "data_type": "boolean",
+          "meta": {}
+        },
+        "annual_fee_usd": {
+          "name": "annual_fee_usd",
+          "description": "Annual fee in USD. Zero for fee-free products.",
+          "data_type": "numeric",
+          "meta": {}
+        },
+        "interest_rate_pct": {
+          "name": "interest_rate_pct",
+          "description": "Annual interest rate as a percentage. Null for non-interest products.",
+          "data_type": "numeric",
+          "meta": {}
+        },
+        "launched_at": {
+          "name": "launched_at",
+          "description": "Date the product was first made available.",
+          "data_type": "date",
+          "meta": {}
+        }
+      },
+      "depends_on": {
+        "nodes": ["source.fintech_dbt.raw.raw_products"]
+      },
+      "tests": ["not_null.product_id", "unique.product_id"]
+    },
+    "model.fintech_dbt.stg_events": {
+      "unique_id": "model.fintech_dbt.stg_events",
+      "fqn": ["fintech_dbt", "staging", "stg_events"],
+      "database": "analytics",
+      "schema": "staging",
+      "name": "stg_events",
+      "resource_type": "model",
+      "package_name": "fintech_dbt",
+      "path": "staging/stg_events.sql",
+      "original_file_path": "models/staging/stg_events.sql",
+      "description": "User-facing product events from Segment. Includes clicks, page views, and feature interactions.",
+      "config": {
+        "materialized": "incremental",
+        "unique_key": "event_id",
+        "tags": ["staging", "events"]
+      },
+      "tags": ["staging", "events"],
+      "columns": {
+        "event_id": {
+          "name": "event_id",
+          "description": "Unique identifier for the event, generated by Segment.",
+          "data_type": "varchar",
+          "meta": {}
+        },
+        "customer_id": {
+          "name": "customer_id",
+          "description": "Foreign key to stg_customers. Null for anonymous sessions.",
+          "data_type": "varchar",
+          "meta": {}
+        },
+        "session_id": {
+          "name": "session_id",
+          "description": "Browser/app session identifier.",
+          "data_type": "varchar",
+          "meta": {}
+        },
+        "event_name": {
+          "name": "event_name",
+          "description": "Name of the event, e.g. page_viewed, button_clicked, transaction_initiated.",
+          "data_type": "varchar",
+          "meta": {}
+        },
+        "event_category": {
+          "name": "event_category",
+          "description": "High-level grouping: navigation, engagement, conversion.",
+          "data_type": "varchar",
+          "meta": {}
+        },
+        "platform": {
+          "name": "platform",
+          "description": "Device platform: web, ios, android.",
+          "data_type": "varchar",
+          "meta": {}
+        },
+        "occurred_at": {
+          "name": "occurred_at",
+          "description": "UTC timestamp when the event occurred.",
+          "data_type": "timestamp",
+          "meta": {}
+        }
+      },
+      "depends_on": {
+        "nodes": ["source.fintech_dbt.raw.raw_events"]
+      },
+      "tests": ["not_null.event_id", "unique.event_id"]
+    },
+    "model.fintech_dbt.int_customer_orders": {
+      "unique_id": "model.fintech_dbt.int_customer_orders",
+      "fqn": ["fintech_dbt", "intermediate", "int_customer_orders"],
+      "database": "analytics",
+      "schema": "intermediate",
+      "name": "int_customer_orders",
+      "resource_type": "model",
+      "package_name": "fintech_dbt",
+      "path": "intermediate/int_customer_orders.sql",
+      "original_file_path": "models/intermediate/int_customer_orders.sql",
+      "description": "Customer-level transaction aggregates. Used by the customers mart to avoid duplicating aggregation logic.",
+      "config": {
+        "materialized": "table",
+        "tags": ["intermediate"]
+      },
+      "tags": ["intermediate"],
+      "columns": {
+        "customer_id": {
+          "name": "customer_id",
+          "description": "Foreign key to stg_customers.",
+          "data_type": "varchar",
+          "meta": {}
+        },
+        "total_transaction_count": {
+          "name": "total_transaction_count",
+          "description": "Lifetime count of all transaction events for this customer.",
+          "data_type": "integer",
+          "meta": {}
+        },
+        "completed_transaction_count": {
+          "name": "completed_transaction_count",
+          "description": "Count of transactions with status = completed.",
+          "data_type": "integer",
+          "meta": {}
+        },
+        "total_spend_usd": {
+          "name": "total_spend_usd",
+          "description": "Sum of amount_usd for completed purchase transactions.",
+          "data_type": "numeric",
+          "meta": {}
+        },
+        "avg_transaction_usd": {
+          "name": "avg_transaction_usd",
+          "description": "Average transaction value across completed purchases.",
+          "data_type": "numeric",
+          "meta": {}
+        },
+        "first_transaction_at": {
+          "name": "first_transaction_at",
+          "description": "Timestamp of the customer's first transaction.",
+          "data_type": "timestamp",
+          "meta": {}
+        },
+        "last_transaction_at": {
+          "name": "last_transaction_at",
+          "description": "Timestamp of the customer's most recent transaction.",
+          "data_type": "timestamp",
+          "meta": {}
+        },
+        "chargeback_count": {
+          "name": "chargeback_count",
+          "description": "Number of chargeback transactions. Used in risk scoring.",
+          "data_type": "integer",
+          "meta": {}
+        }
+      },
+      "depends_on": {
+        "nodes": [
+          "model.fintech_dbt.stg_transactions",
+          "model.fintech_dbt.stg_customers"
+        ]
+      },
+      "tests": ["not_null.customer_id", "unique.customer_id"]
+    },
+    "model.fintech_dbt.int_daily_revenue": {
+      "unique_id": "model.fintech_dbt.int_daily_revenue",
+      "fqn": ["fintech_dbt", "intermediate", "int_daily_revenue"],
+      "database": "analytics",
+      "schema": "intermediate",
+      "name": "int_daily_revenue",
+      "resource_type": "model",
+      "package_name": "fintech_dbt",
+      "path": "intermediate/int_daily_revenue.sql",
+      "original_file_path": "models/intermediate/int_daily_revenue.sql",
+      "description": "Daily revenue roll-up used by finance reporting. Grain: one row per calendar day per currency.",
+      "config": {
+        "materialized": "table",
+        "tags": ["intermediate", "finance"]
+      },
+      "tags": ["intermediate", "finance"],
+      "columns": {
+        "revenue_date": {
+          "name": "revenue_date",
+          "description": "Calendar date (UTC) of the revenue.",
+          "data_type": "date",
+          "meta": {}
+        },
+        "currency_code": {
+          "name": "currency_code",
+          "description": "ISO 4217 currency code.",
+          "data_type": "varchar",
+          "meta": {}
+        },
+        "gross_revenue_usd": {
+          "name": "gross_revenue_usd",
+          "description": "Sum of completed purchase amounts converted to USD.",
+          "data_type": "numeric",
+          "meta": {}
+        },
+        "refund_amount_usd": {
+          "name": "refund_amount_usd",
+          "description": "Sum of refund amounts in USD.",
+          "data_type": "numeric",
+          "meta": {}
+        },
+        "net_revenue_usd": {
+          "name": "net_revenue_usd",
+          "description": "Gross revenue minus refunds.",
+          "data_type": "numeric",
+          "meta": {}
+        },
+        "transaction_count": {
+          "name": "transaction_count",
+          "description": "Number of completed transactions contributing to revenue.",
+          "data_type": "integer",
+          "meta": {}
+        },
+        "unique_customers": {
+          "name": "unique_customers",
+          "description": "Count of distinct customers transacting on this date.",
+          "data_type": "integer",
+          "meta": {}
+        }
+      },
+      "depends_on": {
+        "nodes": ["model.fintech_dbt.stg_transactions"]
+      },
+      "tests": []
+    },
+    "model.fintech_dbt.int_product_metrics": {
+      "unique_id": "model.fintech_dbt.int_product_metrics",
+      "fqn": ["fintech_dbt", "intermediate", "int_product_metrics"],
+      "database": "analytics",
+      "schema": "intermediate",
+      "name": "int_product_metrics",
+      "resource_type": "model",
+      "package_name": "fintech_dbt",
+      "path": "intermediate/int_product_metrics.sql",
+      "original_file_path": "models/intermediate/int_product_metrics.sql",
+      "description": "Per-product usage and revenue metrics. Grain: one row per product per month.",
+      "config": {
+        "materialized": "table",
+        "tags": ["intermediate", "product"]
+      },
+      "tags": ["intermediate", "product"],
+      "columns": {
+        "product_id": {
+          "name": "product_id",
+          "description": "Foreign key to stg_products.",
+          "data_type": "varchar",
+          "meta": {}
+        },
+        "month_start": {
+          "name": "month_start",
+          "description": "First day of the calendar month.",
+          "data_type": "date",
+          "meta": {}
+        },
+        "active_customers": {
+          "name": "active_customers",
+          "description": "Distinct customers who transacted with this product in the month.",
+          "data_type": "integer",
+          "meta": {}
+        },
+        "revenue_usd": {
+          "name": "revenue_usd",
+          "description": "Net revenue attributed to this product in the month.",
+          "data_type": "numeric",
+          "meta": {}
+        },
+        "avg_transaction_usd": {
+          "name": "avg_transaction_usd",
+          "description": "Average transaction value for this product in the month.",
+          "data_type": "numeric",
+          "meta": {}
+        },
+        "churn_count": {
+          "name": "churn_count",
+          "description": "Customers who had their last transaction with this product in the month.",
+          "data_type": "integer",
+          "meta": {}
+        }
+      },
+      "depends_on": {
+        "nodes": [
+          "model.fintech_dbt.stg_transactions",
+          "model.fintech_dbt.stg_products"
+        ]
+      },
+      "tests": []
+    },
+    "model.fintech_dbt.orders": {
+      "unique_id": "model.fintech_dbt.orders",
+      "fqn": ["fintech_dbt", "marts", "orders"],
+      "database": "analytics",
+      "schema": "marts",
+      "name": "orders",
+      "resource_type": "model",
+      "package_name": "fintech_dbt",
+      "path": "marts/orders.sql",
+      "original_file_path": "models/marts/orders.sql",
+      "description": "Final orders mart. Exposed to BI tools and data consumers. One row per transaction.",
+      "config": {
+        "materialized": "table",
+        "tags": ["mart", "core"]
+      },
+      "tags": ["mart", "core"],
+      "columns": {
+        "order_id": {
+          "name": "order_id",
+          "description": "Primary key — maps to transaction_id.",
+          "data_type": "varchar",
+          "meta": {}
+        },
+        "customer_id": {
+          "name": "customer_id",
+          "description": "Foreign key to the customers mart.",
+          "data_type": "varchar",
+          "meta": {}
+        },
+        "product_id": {
+          "name": "product_id",
+          "description": "Foreign key to the product_performance mart.",
+          "data_type": "varchar",
+          "meta": {}
+        },
+        "amount_usd": {
+          "name": "amount_usd",
+          "description": "Transaction amount in USD.",
+          "data_type": "numeric",
+          "meta": {}
+        },
+        "status": {
+          "name": "status",
+          "description": "Order status: pending, completed, failed, reversed.",
+          "data_type": "varchar",
+          "meta": {}
+        },
+        "transaction_type": {
+          "name": "transaction_type",
+          "description": "purchase, refund, chargeback, or transfer.",
+          "data_type": "varchar",
+          "meta": {}
+        },
+        "is_international": {
+          "name": "is_international",
+          "description": "True for cross-border transactions.",
+          "data_type": "boolean",
+          "meta": {}
+        },
+        "ordered_at": {
+          "name": "ordered_at",
+          "description": "UTC timestamp of the transaction.",
+          "data_type": "timestamp",
+          "meta": {}
+        },
+        "settled_at": {
+          "name": "settled_at",
+          "description": "UTC timestamp of settlement. Null if pending.",
+          "data_type": "timestamp",
+          "meta": {}
+        }
+      },
+      "depends_on": {
+        "nodes": [
+          "model.fintech_dbt.stg_transactions",
+          "model.fintech_dbt.stg_customers",
+          "model.fintech_dbt.stg_products"
+        ]
+      },
+      "tests": [
+        "not_null.order_id",
+        "unique.order_id",
+        "accepted_values.status",
+        "not_null.amount_usd"
+      ]
+    },
+    "model.fintech_dbt.customers": {
+      "unique_id": "model.fintech_dbt.customers",
+      "fqn": ["fintech_dbt", "marts", "customers"],
+      "database": "analytics",
+      "schema": "marts",
+      "name": "customers",
+      "resource_type": "model",
+      "package_name": "fintech_dbt",
+      "path": "marts/customers.sql",
+      "original_file_path": "models/marts/customers.sql",
+      "description": "360-degree customer mart. Combines identity, risk, and behavioural data. Primary entity for CRM and analytics.",
+      "config": {
+        "materialized": "table",
+        "tags": ["mart", "core"]
+      },
+      "tags": ["mart", "core"],
+      "columns": {
+        "customer_id": {
+          "name": "customer_id",
+          "description": "Primary key.",
+          "data_type": "varchar",
+          "meta": {}
+        },
+        "email_hash": {
+          "name": "email_hash",
+          "description": "Hashed email for safe cross-system matching.",
+          "data_type": "varchar",
+          "meta": {}
+        },
+        "country_code": {
+          "name": "country_code",
+          "description": "Customer country.",
+          "data_type": "varchar",
+          "meta": {}
+        },
+        "kyc_status": {
+          "name": "kyc_status",
+          "description": "Current KYC verification status.",
+          "data_type": "varchar",
+          "meta": {}
+        },
+        "risk_tier": {
+          "name": "risk_tier",
+          "description": "Risk classification: low, medium, high.",
+          "data_type": "varchar",
+          "meta": {}
+        },
+        "segment": {
+          "name": "segment",
+          "description": "Marketing segment.",
+          "data_type": "varchar",
+          "meta": {}
+        },
+        "is_active": {
+          "name": "is_active",
+          "description": "Account active flag.",
+          "data_type": "boolean",
+          "meta": {}
+        },
+        "lifetime_spend_usd": {
+          "name": "lifetime_spend_usd",
+          "description": "Total spend from int_customer_orders.",
+          "data_type": "numeric",
+          "meta": {}
+        },
+        "transaction_count": {
+          "name": "transaction_count",
+          "description": "Lifetime completed transaction count.",
+          "data_type": "integer",
+          "meta": {}
+        },
+        "first_transaction_at": {
+          "name": "first_transaction_at",
+          "description": "Date of first transaction.",
+          "data_type": "timestamp",
+          "meta": {}
+        },
+        "last_transaction_at": {
+          "name": "last_transaction_at",
+          "description": "Date of most recent transaction.",
+          "data_type": "timestamp",
+          "meta": {}
+        },
+        "days_since_last_transaction": {
+          "name": "days_since_last_transaction",
+          "description": "Used for churn detection. Updated daily.",
+          "data_type": "integer",
+          "meta": {}
+        },
+        "account_created_at": {
+          "name": "account_created_at",
+          "description": "Account creation date.",
+          "data_type": "timestamp",
+          "meta": {}
+        }
+      },
+      "depends_on": {
+        "nodes": [
+          "model.fintech_dbt.stg_customers",
+          "model.fintech_dbt.int_customer_orders"
+        ]
+      },
+      "tests": [
+        "not_null.customer_id",
+        "unique.customer_id",
+        "accepted_values.kyc_status",
+        "accepted_values.risk_tier"
+      ]
+    },
+    "model.fintech_dbt.revenue": {
+      "unique_id": "model.fintech_dbt.revenue",
+      "fqn": ["fintech_dbt", "marts", "revenue"],
+      "database": "analytics",
+      "schema": "marts",
+      "name": "revenue",
+      "resource_type": "model",
+      "package_name": "fintech_dbt",
+      "path": "marts/revenue.sql",
+      "original_file_path": "models/marts/revenue.sql",
+      "description": "Finance-facing revenue mart. Grain: day. Used for P&L reporting and investor dashboards.",
+      "config": {
+        "materialized": "table",
+        "tags": ["mart", "finance"]
+      },
+      "tags": ["mart", "finance"],
+      "columns": {
+        "revenue_date": {
+          "name": "revenue_date",
+          "description": "Calendar date.",
+          "data_type": "date",
+          "meta": {}
+        },
+        "currency_code": {
+          "name": "currency_code",
+          "description": "Currency of origin.",
+          "data_type": "varchar",
+          "meta": {}
+        },
+        "gross_revenue_usd": {
+          "name": "gross_revenue_usd",
+          "description": "Total gross revenue.",
+          "data_type": "numeric",
+          "meta": {}
+        },
+        "net_revenue_usd": {
+          "name": "net_revenue_usd",
+          "description": "Revenue after refunds.",
+          "data_type": "numeric",
+          "meta": {}
+        },
+        "refund_rate_pct": {
+          "name": "refund_rate_pct",
+          "description": "Refunds as a percentage of gross revenue.",
+          "data_type": "numeric",
+          "meta": {}
+        },
+        "transaction_count": {
+          "name": "transaction_count",
+          "description": "Number of revenue-generating transactions.",
+          "data_type": "integer",
+          "meta": {}
+        },
+        "unique_paying_customers": {
+          "name": "unique_paying_customers",
+          "description": "Distinct customers who generated revenue.",
+          "data_type": "integer",
+          "meta": {}
+        },
+        "arpu_usd": {
+          "name": "arpu_usd",
+          "description": "Average revenue per paying user.",
+          "data_type": "numeric",
+          "meta": {}
+        }
+      },
+      "depends_on": {
+        "nodes": ["model.fintech_dbt.int_daily_revenue"]
+      },
+      "tests": ["not_null.revenue_date", "not_null.gross_revenue_usd"]
+    },
+    "model.fintech_dbt.product_performance": {
+      "unique_id": "model.fintech_dbt.product_performance",
+      "fqn": ["fintech_dbt", "marts", "product_performance"],
+      "database": "analytics",
+      "schema": "marts",
+      "name": "product_performance",
+      "resource_type": "model",
+      "package_name": "fintech_dbt",
+      "path": "marts/product_performance.sql",
+      "original_file_path": "models/marts/product_performance.sql",
+      "description": "Monthly product performance mart. Used by product and finance teams to track product-level KPIs.",
+      "config": {
+        "materialized": "table",
+        "tags": ["mart", "product"]
+      },
+      "tags": ["mart", "product"],
+      "columns": {
+        "product_id": {
+          "name": "product_id",
+          "description": "Primary key — product identifier.",
+          "data_type": "varchar",
+          "meta": {}
+        },
+        "product_name": {
+          "name": "product_name",
+          "description": "Human-readable product name.",
+          "data_type": "varchar",
+          "meta": {}
+        },
+        "product_type": {
+          "name": "product_type",
+          "description": "Product category.",
+          "data_type": "varchar",
+          "meta": {}
+        },
+        "month_start": {
+          "name": "month_start",
+          "description": "First day of the reporting month.",
+          "data_type": "date",
+          "meta": {}
+        },
+        "active_customers": {
+          "name": "active_customers",
+          "description": "Customers who transacted this month.",
+          "data_type": "integer",
+          "meta": {}
+        },
+        "monthly_revenue_usd": {
+          "name": "monthly_revenue_usd",
+          "description": "Net revenue for the month.",
+          "data_type": "numeric",
+          "meta": {}
+        },
+        "avg_transaction_usd": {
+          "name": "avg_transaction_usd",
+          "description": "Average transaction size.",
+          "data_type": "numeric",
+          "meta": {}
+        },
+        "churn_count": {
+          "name": "churn_count",
+          "description": "Customers who stopped using this product.",
+          "data_type": "integer",
+          "meta": {}
+        },
+        "churn_rate_pct": {
+          "name": "churn_rate_pct",
+          "description": "Churn as a percentage of active customers.",
+          "data_type": "numeric",
+          "meta": {}
+        }
+      },
+      "depends_on": {
+        "nodes": [
+          "model.fintech_dbt.stg_products",
+          "model.fintech_dbt.int_product_metrics"
+        ]
+      },
+      "tests": []
+    }
+  },
+  "sources": {
+    "source.fintech_dbt.raw.raw_transactions": {
+      "unique_id": "source.fintech_dbt.raw.raw_transactions",
+      "fqn": ["fintech_dbt", "raw", "raw_transactions"],
+      "database": "analytics",
+      "schema": "raw",
+      "name": "raw_transactions",
+      "source_name": "raw",
+      "resource_type": "source",
+      "description": "Raw transactions table ingested from the payment processing system via Fivetran.",
+      "columns": {
+        "id": { "name": "id", "description": "Source system integer primary key.", "data_type": "integer", "meta": {} },
+        "customer_id": { "name": "customer_id", "description": "Source customer reference.", "data_type": "integer", "meta": {} },
+        "amount": { "name": "amount", "description": "Transaction amount in source currency (cents).", "data_type": "integer", "meta": {} },
+        "currency": { "name": "currency", "description": "ISO currency code.", "data_type": "varchar", "meta": {} },
+        "status": { "name": "status", "description": "Raw status string from payment processor.", "data_type": "varchar", "meta": {} },
+        "created_at": { "name": "created_at", "description": "Source created timestamp.", "data_type": "timestamp", "meta": {} }
+      },
+      "tags": [],
+      "config": { "enabled": true }
+    },
+    "source.fintech_dbt.raw.raw_customers": {
+      "unique_id": "source.fintech_dbt.raw.raw_customers",
+      "fqn": ["fintech_dbt", "raw", "raw_customers"],
+      "database": "analytics",
+      "schema": "raw",
+      "name": "raw_customers",
+      "source_name": "raw",
+      "resource_type": "source",
+      "description": "Raw customer records from the core banking system.",
+      "columns": {},
+      "tags": [],
+      "config": { "enabled": true }
+    },
+    "source.fintech_dbt.raw.raw_products": {
+      "unique_id": "source.fintech_dbt.raw.raw_products",
+      "fqn": ["fintech_dbt", "raw", "raw_products"],
+      "database": "analytics",
+      "schema": "raw",
+      "name": "raw_products",
+      "source_name": "raw",
+      "resource_type": "source",
+      "description": "Product catalogue from the product management system.",
+      "columns": {},
+      "tags": [],
+      "config": { "enabled": true }
+    },
+    "source.fintech_dbt.raw.raw_events": {
+      "unique_id": "source.fintech_dbt.raw.raw_events",
+      "fqn": ["fintech_dbt", "raw", "raw_events"],
+      "database": "analytics",
+      "schema": "raw",
+      "name": "raw_events",
+      "source_name": "raw",
+      "resource_type": "source",
+      "description": "Raw event stream from Segment.",
+      "columns": {},
+      "tags": [],
+      "config": { "enabled": true }
+    }
+  },
+  "exposures": {},
+  "metrics": {},
+  "selectors": {},
+  "parent_map": {
+    "model.fintech_dbt.stg_transactions": ["source.fintech_dbt.raw.raw_transactions"],
+    "model.fintech_dbt.stg_customers": ["source.fintech_dbt.raw.raw_customers"],
+    "model.fintech_dbt.stg_products": ["source.fintech_dbt.raw.raw_products"],
+    "model.fintech_dbt.stg_events": ["source.fintech_dbt.raw.raw_events"],
+    "model.fintech_dbt.int_customer_orders": ["model.fintech_dbt.stg_transactions", "model.fintech_dbt.stg_customers"],
+    "model.fintech_dbt.int_daily_revenue": ["model.fintech_dbt.stg_transactions"],
+    "model.fintech_dbt.int_product_metrics": ["model.fintech_dbt.stg_transactions", "model.fintech_dbt.stg_products"],
+    "model.fintech_dbt.orders": ["model.fintech_dbt.stg_transactions", "model.fintech_dbt.stg_customers", "model.fintech_dbt.stg_products"],
+    "model.fintech_dbt.customers": ["model.fintech_dbt.stg_customers", "model.fintech_dbt.int_customer_orders"],
+    "model.fintech_dbt.revenue": ["model.fintech_dbt.int_daily_revenue"],
+    "model.fintech_dbt.product_performance": ["model.fintech_dbt.stg_products", "model.fintech_dbt.int_product_metrics"]
+  },
+  "child_map": {}
+}

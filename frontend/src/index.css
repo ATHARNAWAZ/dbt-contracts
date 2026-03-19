@@ -1,0 +1,99 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    background-color: #0A0A0A;
+    color: #FAFAFA;
+    font-family: 'Inter', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Scrollbar styling — keeps the dark theme consistent */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #111111;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #2F2F2F;
+    border-radius: 3px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #3F3F3F;
+  }
+
+  /* Selection colour */
+  ::selection {
+    background-color: rgba(124, 58, 237, 0.3);
+  }
+}
+
+@layer components {
+  /* Reusable card surface */
+  .card {
+    @apply bg-surface border border-border rounded-lg;
+  }
+
+  /* Subtle gradient overlay for hero sections */
+  .hero-gradient {
+    background: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(124, 58, 237, 0.15), transparent);
+  }
+
+  /* Code block base style */
+  .code-block {
+    @apply bg-code font-mono text-sm rounded-lg border border-border;
+  }
+}
+
+@layer utilities {
+  /* Truncate text with ellipsis */
+  .truncate-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+}
+
+/* ── Reduced-motion support (WCAG 2.3.3 Animation from Interactions AAA,
+   and best-practice for WCAG 2.1 AA) ─────────────────────────────────────
+   Disables all CSS-driven transitions and animations when the user has
+   requested reduced motion in their OS settings.  Framer Motion animations
+   are handled per-component via the useReducedMotion() hook.             */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Screen-reader-only utility — visually hidden but announced by AT.
+   Tailwind's built-in `sr-only` class is equivalent; this is here as a
+   belt-and-braces fallback for any plain CSS usage.                      */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
