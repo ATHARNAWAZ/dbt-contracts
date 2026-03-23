@@ -4,8 +4,8 @@
 
 Upload your `manifest.json`. Get AI-generated data contracts for every model in seconds. Enforce them in CI with a single GitHub Action.
 
-[Try it free at dbt-contracts.io](https://dbt-contracts.io) &nbsp;·&nbsp;
-[Docs](https://dbt-contracts.io/docs) &nbsp;·&nbsp;
+[Try it free at dbt-contracts (https://dbt-contracts.vercel.app/)) &nbsp;·&nbsp;
+[Docs](https://dbt-contracts.vercel.app/docs) &nbsp;·&nbsp;
 [Report a bug](https://github.com/dbt-contracts/dbt-contracts/issues)
 
 ---
