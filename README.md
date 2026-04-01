@@ -33,7 +33,7 @@ dbt-contracts collapses that to 35 seconds.
 **Browser (no installation):**
 
 1. Run `dbt compile` in your dbt project to generate `target/manifest.json`
-2. Go to [dbt-contracts.io/app](https://dbt-contracts.io/app)
+2. Go to [dbt-contracts.app](https://dbt-contracts.vercel.app)
 3. Drop your `manifest.json` in the upload zone
 4. Click **Generate** for each model (or **Generate all**)
 5. Download `contracts.yml` and the GitHub Action from the Download page
