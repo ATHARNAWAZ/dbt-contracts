@@ -330,7 +330,7 @@ function Hero() {
               </Button>
             </Link>
             <a
-              href="https://github.com/athar-naaz/dbt-contracts"
+              href="https://github.com/atharnawaz/dbt-contracts"
               target="_blank"
               rel="noopener noreferrer"
               aria-label="View dbt-contracts on GitHub (opens in new tab)"
